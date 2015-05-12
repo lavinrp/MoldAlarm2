@@ -22,7 +22,7 @@ function varargout = MoldAlarm2(varargin)
 
 % Edit the above text to modify the response to help MoldAlarm2
 
-% Last Modified by GUIDE v2.5 11-May-2015 22:39:16
+% Last Modified by GUIDE v2.5 12-May-2015 00:12:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,12 @@ function MoldAlarm2_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for MoldAlarm2
 handles.output = hObject;
 
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%stores the filepath of the images
+handles.filePath = '';
+
+
+%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 % Update handles structure
 guidata(hObject, handles);
 
@@ -79,6 +85,24 @@ function FilePath_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%read in the given string and save to handles.filePath
+filePath = get(hObject,'String');
+%TODO: print error if issue
+
+
+%if the filepath is valid save it and enable thte FirstReferenceImage box
+if isdir(filePath)
+    handles.filePath = filePath;
+    set(handles.FirstReferenceImage, 'Enable', 'on');
+    set(handles.Start, 'Enable', 'on');
+end
+
+% Update handles structure
+guidata(hObject, handles);
+
+%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 % Hints: get(hObject,'String') returns contents of FilePath as text
 %        str2double(get(hObject,'String')) returns contents of FilePath as a double
 
@@ -102,9 +126,28 @@ function Start_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+%find axes;
+ axes1 = handles.axes1;
+
+%get reference to tif Files;
+ filePath = get(handles.FilePath, 'String');
+ tifFiles = dir(strcat(filePath,'/*.tif')); 
+
+ %get referenceImage and rectangle for future cropping(cropRect)
+ refImageNum = uint8(str2double(get(handles.FirstReferenceImage,'String')));  
+ [referenceImage, cropRect] = GetReferenceImage(filePath, refImageNum, tifFiles);
+ imshow(referenceImage);
+ 
+ %TODO: every 10 seconds check to see if there is an unchecked frame
+ %TODO if there is an unchecked frame check for mold
+
+%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-function FirstReferenceImage_Callback(hObject, eventdata, handles)
+
+function FirstReferenceImage_Callback(hObject, eventdata, handles, axes1)
 % hObject    handle to FirstReferenceImage (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -154,3 +197,14 @@ function Continue_Callback(hObject, eventdata, handles)
 % hObject    handle to Continue (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in Close.
+function Close_Callback(hObject, eventdata, handles)
+% hObject    handle to Close (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%quit program
+clear all;
+close all;
