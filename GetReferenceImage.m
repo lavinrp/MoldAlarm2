@@ -4,7 +4,7 @@ function [refImage, cropRect]= GetReferenceImage(filePath, referenceNumber, tifF
    %tifFiles = dir(strcat(filePath,'/*.tif')); 
    
    %find reference Image
-   refImageName = tifFiles(1).name; %reference image should always be the first image
+   refImageName = tifFiles(referenceNumber).name; %reference image should always be the first image
    refImagePath = strcat(filePath,'/',refImageName);  %finds the filepath
    uncroppedRefImage = imread(refImagePath);
    [refImage, cropRect] = imcrop(uncroppedRefImage(:,:,1));

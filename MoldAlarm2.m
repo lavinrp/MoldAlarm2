@@ -147,16 +147,23 @@ function Start_Callback(hObject, eventdata, handles)
  %every 40 seconds check to see if there is an unchecked frame
  mold = false;
  
+ %while mold has not been found check frames for mold
  while ~mold
      %if there are files that have not been checked
-     if lastCheckedFrame < 5%length(tifFiles)
+     if lastCheckedFrame < length(tifFiles)
+         %aquire the cropped image to check for mold
+         imageToCheck = GetImage(filePath, tifFiles(lastCheckedFrame + 1), cropRect);
+
          %check the frame for mold
-         mold = CheckFrameForMold(filePath, lastCheckedFrame + 1, referenceImage, cropRect);
+         mold = CheckFrameForMold(imageToCheck, referenceImage);
          lastCheckedFrame = lastCheckedFrame + 1;
+         
+     %wait 40 seconds only if there are no unchecked frames
+     else
+         pause(40);         
      end
      
-    %wait 40 seconds before starting the loop again
-    pause(40)
+
  end
  
  
