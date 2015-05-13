@@ -1,3 +1,3 @@
-function CheckFrameForMold(filePath, frameToCheck, referenceImage, cropRect)
-    
+function moldFound = CheckFrameForMold(filePath, frameToCheck, referenceImage, cropRect)
+    moldFound = false;
 end

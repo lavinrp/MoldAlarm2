@@ -22,7 +22,7 @@ function varargout = MoldAlarm2(varargin)
 
 % Edit the above text to modify the response to help MoldAlarm2
 
-% Last Modified by GUIDE v2.5 12-May-2015 00:12:03
+% Last Modified by GUIDE v2.5 13-May-2015 01:59:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -96,6 +96,7 @@ if isdir(filePath)
     handles.filePath = filePath;
     set(handles.FirstReferenceImage, 'Enable', 'on');
     set(handles.Start, 'Enable', 'on');
+    set(handles.StartingImage, 'Enable', 'on');
 end
 
 % Update handles structure
@@ -140,28 +141,31 @@ function Start_Callback(hObject, eventdata, handles)
  [referenceImage, cropRect] = GetReferenceImage(filePath, refImageNum, tifFiles);
  imshow(referenceImage);
  
+ %image to start checking for mold at
+ lastCheckedFrame = uint8(str2double(get(handles.StartingImage,'String')));
  
-
  %every 40 seconds check to see if there is an unchecked frame
  mold = false;
  
- %TODO: allow user to select this with second text field.
- lastCheckedFrame = refImageNum;
  while ~mold
      %if there are files that have not been checked
-     if lastCheckedFrame < length(tifFiles)
+     if lastCheckedFrame < 5%length(tifFiles)
          %check the frame for mold
          mold = CheckFrameForMold(filePath, lastCheckedFrame + 1, referenceImage, cropRect);
          lastCheckedFrame = lastCheckedFrame + 1;
      end
      
     %wait 40 seconds before starting the loop again
-    pause(1) 
+    pause(40)
  end
  
  
  %mold found if here
- 
+ SoundAlarm();
+ %update starting image to lastCheckedFrame in case of false positive
+ set(handles.StartingImage, 'String', num2str(lastCheckedFrame));
+ % Update handles structure
+ guidata(hObject, handles);
  
 
 
@@ -195,18 +199,18 @@ end
 
 
 
-function SecondReferenceImage_Callback(hObject, eventdata, handles)
-% hObject    handle to SecondReferenceImage (see GCBO)
+function StartingImage_Callback(hObject, eventdata, handles)
+% hObject    handle to StartingImage (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of SecondReferenceImage as text
-%        str2double(get(hObject,'String')) returns contents of SecondReferenceImage as a double
+% Hints: get(hObject,'String') returns contents of StartingImage as text
+%        str2double(get(hObject,'String')) returns contents of StartingImage as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function SecondReferenceImage_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to SecondReferenceImage (see GCBO)
+function StartingImage_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to StartingImage (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
