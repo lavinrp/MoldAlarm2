@@ -140,7 +140,32 @@ function Start_Callback(hObject, eventdata, handles)
  [referenceImage, cropRect] = GetReferenceImage(filePath, refImageNum, tifFiles);
  imshow(referenceImage);
  
- %TODO: every 10 seconds check to see if there is an unchecked frame
+ 
+
+ %every 40 seconds check to see if there is an unchecked frame
+ mold = false;
+ 
+ %TODO: allow user to select this with second text field.
+ lastCheckedFrame = refImageNum;
+ while ~mold
+     %if there are files that have not been checked
+     if lastCheckedFrame < length(tifFiles)
+         %check the frame for mold
+         mold = CheckFrameForMold(filePath, lastCheckedFrame + 1, referenceImage, cropRect);
+         lastCheckedFrame = lastCheckedFrame + 1;
+     end
+     
+    %wait 40 seconds before starting the loop again
+    pause(1) 
+ end
+ 
+ 
+ %mold found if here
+ 
+ 
+
+
+ 
  %TODO if there is an unchecked frame check for mold
 
 %^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
