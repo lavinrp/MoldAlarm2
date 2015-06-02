@@ -1,6 +1,5 @@
 
 
-
 function moldFound = CheckFrameForMold(frameToCheck, referenceImage)
    
 %     %edge detect and subtract
@@ -14,28 +13,40 @@ function moldFound = CheckFrameForMold(frameToCheck, referenceImage)
 %     figure;
 %     imshow(cleanedImage);
 %     figure;
-
+    pause(1);
     filteredImage = FilterImage(frameToCheck, referenceImage);
     
     %count the remaining objects in view
     objCount = CountObjects(filteredImage);
     
-    moldFound = false;
+    %returns true if more objects were found than were expected
+    if objCount > 1
+        moldFound = true;
+    else
+        moldFound = false;
+    end
+    
+    %moldFound = false;
 end
 
 function filteredImage = FilterImage(frameToCheck, referenceImage)
     %edge detect and subtract
     reducedImage = FindSubtractedEdge(frameToCheck, referenceImage);
-    figure;
+    
+    %reducedImage = EliminateInvalidObjects(reducedImage, 700, 30);
+    %reducedImage = EnlargeObjects(reducedImage, 1);
+    %figure;
     imshow(reducedImage);
     title('subtracted')
-    pause(2);
+    pause(1);
     
-    %remove small invalid objects from image
-    cleanedImage = EliminateInvalidObjects(reducedImage, 1000, 5);
+    %remove small invalid objdects from image
+    cleanedImage = EliminateInvalidObjects(reducedImage, 350, 200);
     
     imshow(cleanedImage);
     title('cleaned')
+    
+    pause(1);
     
     %enlarge remaining structures
     %enhancedImage = EnlargeObjects(cleanedImage, 3);
@@ -45,8 +56,7 @@ function filteredImage = FilterImage(frameToCheck, referenceImage)
     %TODO: remove remaining invalid structures
     
     
-    %TODO: return cleaned image
-    
+    %return cleaned image
     filteredImage = cleanedImage;
     
 end
@@ -59,8 +69,8 @@ function returnImage = EnlargeObjects(image, radius)
 end
 
 function objCount = CountObjects(image)
-    objCount = 1;
-    %TODO: fill stub
+    CC = bwconncomp(image); 
+    objCount = CC.NumObjects();
 end
 
 function cleanedImage = EliminateInvalidObjects(image, maxObjSize, minObjSize)
@@ -86,18 +96,38 @@ end
 
 function returnImage = FindSubtractedEdge(image,refImg)
     %TODO: posabilities for better subtracted image
-    %TODO: enlarge structures in refImg?
+
     %TODO: subtract out last image too?
+    
+    imshow(image);
+    
+    %sharpen the image 
+    sharpImage = imsharpen(image);
+    imshow(sharpImage);
+    title('sharp');
+    pause(1);
+    
+    %sharpen the reference image
+    sharpRef = imsharpen(refImg);
  
     %find the edges of the image to subtract from
-    im = edge(image);
+    %im = edge(image);
+    im = edge(sharpImage);
     
     %find the edges of the reference image(image to subtract)
-    rim = edge(refImg);
+    rim = edge(sharpRef);
     
     %Enlarge all objects in reference image to get rid of more noise
-    rim = EnlargeObjects(rim, 2);
+    rim = EnlargeObjects(rim, 3);
     
     %return the result of the subtraction
     returnImage = im - rim;    
+    
+    %testing
+    %TODO: change back to subtracted version
+    returnImage = edge(im);
+    
+    %TODO:  test to see if imfill is worth while
+    returnImage = imfill(returnImage, 'holes');
 end
+

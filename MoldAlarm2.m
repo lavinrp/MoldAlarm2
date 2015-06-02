@@ -244,3 +244,4 @@ function Close_Callback(hObject, eventdata, handles)
 %quit program
 clear all;
 close all;
+quit;
