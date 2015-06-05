@@ -6,8 +6,10 @@ function image = GetImage(filePath, tifFile, cropRect)
    uncroppedImage = imread(imagePath);
    
    %crop the image to fit the reference image
-   image = imcrop(uncroppedImage(:,:,1), cropRect);
-   
+   for i = 1:length(cropRect)
+  
+       image{i} = imcrop(uncroppedImage(:,:,1), cropRect{i});
+   end
    %display the image to the user
-   imshow(image);
+   %imshow(image);
 end
