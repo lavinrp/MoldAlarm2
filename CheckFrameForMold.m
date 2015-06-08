@@ -33,15 +33,20 @@ function filteredImage = FilterImage(frameToCheck, referenceImage)
     %edge detect and subtract
     reducedImage = FindSubtractedEdge(frameToCheck, referenceImage);
     
-    %reducedImage = EliminateInvalidObjects(reducedImage, 700, 30);
-    %reducedImage = EnlargeObjects(reducedImage, 1);
-    %figure;
     imshow(reducedImage);
     title('subtracted')
     pause(1);
     
-    %remove small invalid objdects from image
-    cleanedImage = EliminateInvalidObjects(reducedImage, 350, 200);
+    %rejoin objects broken from subtraction
+    rejoinedImage = EnlargeObjects(reducedImage, 3);
+    
+    imshow(rejoinedImage);
+    title('rejoined')
+    pause(1);
+    
+    
+    %remove all invalid objdects from image
+    cleanedImage = EliminateInvalidObjects(rejoinedImage, 450, 350);
     
     imshow(cleanedImage);
     title('cleaned')
