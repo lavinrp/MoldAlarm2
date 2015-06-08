@@ -20,7 +20,7 @@ function moldFound = CheckFrameForMold(frameToCheck, referenceImage)
     objCount = CountObjects(filteredImage);
     
     %returns true if more objects were found than were expected
-    if objCount > 1
+    if objCount > 100
         moldFound = true;
     else
         moldFound = false;
@@ -95,7 +95,6 @@ function cleanedImage = EliminateInvalidObjects(image, maxObjSize, minObjSize)
 end
 
 function returnImage = FindSubtractedEdge(image,refImg)
-    %TODO: posabilities for better subtracted image
 
     %TODO: subtract out last image too?
     
@@ -111,7 +110,6 @@ function returnImage = FindSubtractedEdge(image,refImg)
     sharpRef = imsharpen(refImg);
  
     %find the edges of the image to subtract from
-    %im = edge(image);
     im = edge(sharpImage);
     
     %find the edges of the reference image(image to subtract)
@@ -123,11 +121,6 @@ function returnImage = FindSubtractedEdge(image,refImg)
     %return the result of the subtraction
     returnImage = im - rim;    
     
-    %testing
-    %TODO: change back to subtracted version
-    returnImage = edge(im);
-    
-    %TODO:  test to see if imfill is worth while
     returnImage = imfill(returnImage, 'holes');
 end
 
