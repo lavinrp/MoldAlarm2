@@ -1,13 +1,13 @@
-function [refImage, cropRect]= GetReferenceImage(filePath, referenceNumber, tifFiles)
+function [refImage, cropRect]= GetReferenceImage(filePath, referenceNumber, containerNumber, tifFiles)
   
    
    %tifFiles = dir(strcat(filePath,'/*.tif')); 
-   
+for i = 1:containerNumber
    %find reference Image
    refImageName = tifFiles(referenceNumber).name; %reference image should always be the first image
    refImagePath = strcat(filePath,'/',refImageName);  %finds the filepath
    uncroppedRefImage = imread(refImagePath);
-   [refImage, cropRect] = imcrop(uncroppedRefImage(:,:,1));
+   [refImage{i}, cropRect{i}] = imcrop(uncroppedRefImage(:,:,1));
 
 %     refImageName = refImagePath.name;
 %     fullImagePath= strcat(filePath,'/',refImageName);  %finds the filepath
@@ -16,4 +16,6 @@ function [refImage, cropRect]= GetReferenceImage(filePath, referenceNumber, tifF
 %     [refImage, cropRect] = imcrop(origImage(:,:,1));
 %     
 %     axes(axes1);
+    end
 end
+

@@ -13,20 +13,19 @@ function moldFound = CheckFrameForMold(frameToCheck, referenceImage)
 %     figure;
 %     imshow(cleanedImage);
 %     figure;
-    pause(1);
-    filteredImage = FilterImage(frameToCheck, referenceImage);
-    
-    %count the remaining objects in view
-    objCount = CountObjects(filteredImage);
-    
-    %returns true if more objects were found than were expected
-    if objCount > 1
-        moldFound = true;
-    else
-        moldFound = false;
+    moldFound = false;
+    for i = 1:length(frameToCheck)
+        %pause(1);
+        filteredImage = FilterImage(frameToCheck{i}, referenceImage{i});
+
+        %count the remaining objects in view
+        objCount = CountObjects(filteredImage);
+
+        %returns true if more objects were found than were expected
+        if objCount > 1
+            moldFound = true;
+        end
     end
-    
-    %moldFound = false;
 end
 
 function filteredImage = FilterImage(frameToCheck, referenceImage)
@@ -38,7 +37,7 @@ function filteredImage = FilterImage(frameToCheck, referenceImage)
     %figure;
     imshow(reducedImage);
     title('subtracted')
-    pause(1);
+    %pause(1);
     
     %remove small invalid objdects from image
     cleanedImage = EliminateInvalidObjects(reducedImage, 350, 200);
@@ -46,7 +45,7 @@ function filteredImage = FilterImage(frameToCheck, referenceImage)
     imshow(cleanedImage);
     title('cleaned')
     
-    pause(1);
+    %%pause(1);
     
     %enlarge remaining structures
     %enhancedImage = EnlargeObjects(cleanedImage, 3);
@@ -105,7 +104,7 @@ function returnImage = FindSubtractedEdge(image,refImg)
     sharpImage = imsharpen(image);
     imshow(sharpImage);
     title('sharp');
-    pause(1);
+    %pause(1);
     
     %sharpen the reference image
     sharpRef = imsharpen(refImg);
