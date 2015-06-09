@@ -13,9 +13,8 @@ function moldFound = CheckFrameForMold(frameToCheck, referenceImage)
 %     figure;
 %     imshow(cleanedImage);
 %     figure;
-
+<<<<<<< HEAD
     moldFound = false;
-    
     for i = 1:length(frameToCheck)
         %pause(1);
         filteredImage = FilterImage(frameToCheck{i}, referenceImage{i});
@@ -26,13 +25,18 @@ function moldFound = CheckFrameForMold(frameToCheck, referenceImage)
         %returns true if more objects were found than were expected
         if objCount > 1
             moldFound = true;
-            %break out of loop if one mold was found
-            break;
         end
         
     end
     
- 
+    
+    %returns true if more objects were found than were expected
+    if objCount > 100
+        moldFound = true;
+    else
+        moldFound = false;
+>>>>>>> reinventTheWheel
+    end
 end
 
 function filteredImage = FilterImage(frameToCheck, referenceImage)
