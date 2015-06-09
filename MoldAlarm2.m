@@ -22,7 +22,7 @@ function varargout = MoldAlarm2(varargin)
 
 % Edit the above text to modify the response to help MoldAlarm2
 
-% Last Modified by GUIDE v2.5 13-May-2015 01:59:34
+% Last Modified by GUIDE v2.5 02-Jun-2015 15:09:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -97,6 +97,8 @@ if isdir(filePath)
     set(handles.FirstReferenceImage, 'Enable', 'on');
     set(handles.Start, 'Enable', 'on');
     set(handles.StartingImage, 'Enable', 'on');
+    set(handles.NumOfContainer, 'Enable','on');
+    set(handles.ImFormat, 'Enable','on');
 end
 
 % Update handles structure
@@ -128,54 +130,96 @@ function Start_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- 
+set(handles.Start, 'Enable', 'off'); 
 %find axes;
  axes1 = handles.axes1;
 
 %get reference to tif Files;
  filePath = get(handles.FilePath, 'String');
- tifFiles = dir(strcat(filePath,'/*.tif')); 
+ imageFormat = get(handles.ImFormat, 'String');
+ tifFiles = dir(strcat(filePath,'/*.',imageFormat)); %Annette: I think this
+% needs to be included in the loop as well, not just be here otherwise it 
+% doesn't update it
 
  %get referenceImage and rectangle for future cropping(cropRect)
- refImageNum = uint8(str2double(get(handles.FirstReferenceImage,'String')));  
- [referenceImage, cropRect] = GetReferenceImage(filePath, refImageNum, tifFiles);
- imshow(referenceImage);
+ refImageNum = uint8(str2double(get(handles.FirstReferenceImage,'String'))); 
+ containerNum = str2double(get(handles.NumOfContainer,'String'));
+ [referenceImage, cropRect] = GetReferenceImage(filePath, refImageNum, containerNum, tifFiles);
+ 
+  refImages = [];
+  for i = 1:containerNum
+      [a(i),b(i)] = size(referenceImage{i});
+  end
+  amax = max(a);
+  bmax = max(b);
+% 
+  for i = 1:containerNum
+      [a,b] = size(referenceImage{i});
+      if (a<amax)
+          fill = zeros((amax-a),b);
+          images{i} = [referenceImage{i};fill];
+      else
+          images{i} = referenceImage{i};    
+      end     
+  end
+  
+  for i = 1:containerNum
+      refImages = [refImages,images{i}];
+  end
+          
+  imshow(refImages);
  
  %image to start checking for mold at
- lastCheckedFrame = uint8(str2double(get(handles.StartingImage,'String')));
+ checkFrame = uint8(str2double(get(handles.StartingImage,'String')));
  
  %every 40 seconds check to see if there is an unchecked frame
  mold = false;
  
  %while mold has not been found check frames for mold
  while ~mold
+     
+     tifFiles = dir(strcat(filePath,'/*.',imageFormat)); 
+     pause(2);
+     
+     %TODO: inc img counter with every loop
+     imageCounterStr = get(handles.ImageCounter, 'String');
+     imageNumber = str2double(imageCounterStr);
+     
+     %incriment image number
+     imageNumber = imageNumber + 1;
+     
+     %convert back to string and update gui
+     newStr = num2str(imageNumber);
+     
+     set(handles.ImageCounter, 'String', newStr);
+     guidata(hObject, handles);
+     
      %if there are files that have not been checked
-     if lastCheckedFrame < length(tifFiles)
+     if checkFrame < length(tifFiles) +1
+         'analyze:'
+         tifFiles(checkFrame)
          %aquire the cropped image to check for mold
-         imageToCheck = GetImage(filePath, tifFiles(lastCheckedFrame + 1), cropRect);
+         imageToCheck = GetImage(filePath, tifFiles(checkFrame), cropRect);
 
          %check the frame for mold
          mold = CheckFrameForMold(imageToCheck, referenceImage);
-         lastCheckedFrame = lastCheckedFrame + 1;
+         checkFrame = checkFrame + 1;
          
      %wait 40 seconds only if there are no unchecked frames
      else
          pause(40);         
      end
-     
-
  end
  
- 
+ tifFiles(checkFrame-1).name %print out name
  %mold found if here
  SoundAlarm();
  %update starting image to lastCheckedFrame in case of false positive
- set(handles.StartingImage, 'String', num2str(lastCheckedFrame));
+ set(handles.StartingImage, 'String', num2str(checkFrame));
  % Update handles structure
  guidata(hObject, handles);
  
-
-
+ set(handles.Start, 'Enable', 'on'); 
  
  %TODO if there is an unchecked frame check for mold
 
@@ -204,12 +248,38 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+function ImFormat_Callback(hObject, eventdata, handles)
+% hObject    handle to ImFormat (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ImFormat as text
+%        str2double(get(hObject,'String')) returns contents of ImFormat as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ImFormat_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ImFormat (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
 
 
 function StartingImage_Callback(hObject, eventdata, handles)
 % hObject    handle to StartingImage (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+imageCounterStr = get(handles.StartingImage, 'String');
+set(handles.ImageCounter, 'String', imageCounterStr);
+guidata(hObject, handles);
+     
+
+
 
 % Hints: get(hObject,'String') returns contents of StartingImage as text
 %        str2double(get(hObject,'String')) returns contents of StartingImage as a double
@@ -227,12 +297,33 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+function NumOfContainer_Callback(hObject, eventdata, handles)
+% hObject    handle to NumOfContainer (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of NumOfContainer as text
+%        str2double(get(hObject,'String')) returns contents of NumOfContainer as a double
+
+% --- Executes during object creation, after setting all properties.
+function NumOfContainer_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to NumOfContainer (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
 
 % --- Executes on button press in Continue.
 function Continue_Callback(hObject, eventdata, handles)
-% hObject    handle to Continue (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+
+
 
 
 % --- Executes on button press in Close.
@@ -244,4 +335,3 @@ function Close_Callback(hObject, eventdata, handles)
 %quit program
 clear all;
 close all;
-quit;
