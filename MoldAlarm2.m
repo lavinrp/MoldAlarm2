@@ -133,6 +133,10 @@ function Start_Callback(hObject, eventdata, handles)
 set(handles.Start, 'Enable', 'off'); 
 %find axes;
  axes1 = handles.axes1;
+ 
+imageCounterStr = get(handles.StartingImage, 'String');
+set(handles.ImageCounter, 'String', imageCounterStr);
+guidata(hObject, handles);
 
 %get reference to tif Files;
  filePath = get(handles.FilePath, 'String');
@@ -181,21 +185,25 @@ set(handles.Start, 'Enable', 'off');
      tifFiles = dir(strcat(filePath,'/*.',imageFormat)); 
      pause(2);
      
-     %TODO: inc img counter with every loop
-     imageCounterStr = get(handles.ImageCounter, 'String');
-     imageNumber = str2double(imageCounterStr);
-     
-     %incriment image number
-     imageNumber = imageNumber + 1;
-     
-     %convert back to string and update gui
-     newStr = num2str(imageNumber);
-     
-     set(handles.ImageCounter, 'String', newStr);
-     guidata(hObject, handles);
+    
      
      %if there are files that have not been checked
      if checkFrame < length(tifFiles) +1
+         
+         
+          %TODO: inc img counter with every loop
+         imageCounterStr = get(handles.ImageCounter, 'String');
+         imageNumber = str2double(imageCounterStr);
+
+         %incriment image number
+         imageNumber = imageNumber + 1;
+
+         %convert back to string and update gui
+         newStr = num2str(imageNumber);
+
+         set(handles.ImageCounter, 'String', newStr);
+         guidata(hObject, handles);
+         
          'analyze:'
          tifFiles(checkFrame)
          %aquire the cropped image to check for mold
